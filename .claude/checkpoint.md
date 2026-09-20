@@ -130,6 +130,20 @@ Plan: `/Users/david/.claude/plans/system-reminder-the-user-started-swift-valiant
   with `GENERATE_INFOPLIST_FILE: NO` for that target.
 - Only the keyless sources run in the widget (NEA). PurpleAir and Google bill
   the user's own key.
+- THE WIDGET'S "No reading" BUG: data.gov.sg returned HTTP 429 (rate limited,
+  per 10-second window) and URLSession CACHED the 429 and replayed it, so the
+  widget stayed broken after the limit cleared. Two fixes: requests use
+  `.reloadIgnoringLocalCacheData`, and `retrying()` retries 429/5xx once but
+  never retries a 404. Confirmed fixed: widget process now logs
+  `response_status=200, cache_hit=false`.
+- NEA publishes PM2.5 HOURLY, within about a minute of the hour (sampled
+  23:00:56, 14:00:37). Refreshing every 30 min would fetch identical bytes,
+  push harder against the rate limit, and exceed WidgetKit's daily refresh
+  budget so iOS starts skipping. Hourly, aligned just after the hour, is
+  correct. Do not "improve" this to 30 min.
+- The widget caches the last good reading per region in its own UserDefaults
+  (not an App Group) and shows it with its timestamp when a fetch fails,
+  rather than "No reading".
 
 - NEA publishes the reading for hour N at about hour N, not on a fixed lag.
   Sampled 2026-09-20: 12:00 data seen at 12:45:40, 13:00 at 13:45:38, but

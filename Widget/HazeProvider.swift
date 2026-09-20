@@ -6,6 +6,8 @@ struct HazeEntry: TimelineEntry {
     let date: Date
     let region: Region
     let conditions: Conditions?
+    /// True when the fetch failed and this is a remembered reading.
+    var isStale: Bool = false
 }
 
 struct HazeProvider: AppIntentTimelineProvider {
@@ -30,11 +32,15 @@ struct HazeProvider: AppIntentTimelineProvider {
         // got the previous hour's, try again soon rather than sitting stale
         // for an hour.
         let reload: Date
-        if let observedAt = entry.conditions?.observedAt,
+        if !entry.isStale,
+           let observedAt = entry.conditions?.observedAt,
            Calendar.current.isDate(observedAt, equalTo: .now, toGranularity: .hour) {
             reload = Self.nextHour(after: .now)
         } else {
-            reload = Date.now.addingTimeInterval(10 * 60)
+            // Either the fetch failed or we got the previous hour's reading.
+            // Try again before the hour is out, but not so often that a
+            // rate limit turns into a battery drain.
+            reload = Date.now.addingTimeInterval(15 * 60)
         }
 
         return Timeline(entries: [entry], policy: .after(reload))
@@ -44,12 +50,25 @@ struct HazeProvider: AppIntentTimelineProvider {
     /// user's own key, and a widget waking hourly on every device is the
     /// wrong place to spend that quota.
     private func entry(for region: Region) async -> HazeEntry {
+        let cache = ConditionsCache()
         let service = AirQualityService(sources: [NEASource()])
         let snapshot = await service.fetchAll()
+
+        if let fresh = snapshot.conditions(for: region) {
+            cache.save(fresh)
+            return HazeEntry(date: .now, region: region, conditions: fresh)
+        }
+
+        // The fetch failed -- most often a 429 from data.gov.sg, whose rate
+        // limit is per 10-second window and easy to trip when the app and
+        // the widget refresh together. An hour-old reading with its time
+        // shown beats an empty widget; air quality does not change so fast
+        // that the last number is worthless.
         return HazeEntry(
             date: .now,
             region: region,
-            conditions: snapshot.conditions(for: region)
+            conditions: cache.load(for: region),
+            isStale: true
         )
     }
 

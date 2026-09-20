@@ -81,7 +81,7 @@ struct HazeWidgetView: View {
                     .foregroundStyle(.secondary)
 
                 Spacer(minLength: 0)
-                psiFootnote(c)
+                footnote(c)
             } else {
                 unavailable
             }
@@ -123,8 +123,12 @@ struct HazeWidgetView: View {
         }
     }
 
-    private func psiFootnote(_ c: Conditions) -> some View {
-        Text(c.psi.map { "PSI \(Int($0.rounded()))" } ?? " ")
+    /// When the reading is remembered rather than fresh, say when it is
+    /// from. A number with no age is worse than a number with one.
+    private func footnote(_ c: Conditions) -> some View {
+        Text(entry.isStale
+             ? c.observedAtDescription
+             : (c.psi.map { "PSI \(Int($0.rounded()))" } ?? " "))
             .font(.caption2)
             .foregroundStyle(.tertiary)
     }
@@ -156,7 +160,9 @@ struct HazeWidgetView: View {
             if let c = entry.conditions {
                 Text("\(Int(c.pm25.rounded())) µg/m³ · \(c.pm25Band.label)")
                     .font(.headline)
-                Text(c.psi.map { "PSI \(Int($0.rounded()))" } ?? "PM2.5, 1 hour")
+                Text(entry.isStale
+                     ? c.observedAtDescription
+                     : (c.psi.map { "PSI \(Int($0.rounded()))" } ?? "PM2.5, 1 hour"))
                     .font(.caption2)
             } else {
                 Text("No reading").font(.headline)

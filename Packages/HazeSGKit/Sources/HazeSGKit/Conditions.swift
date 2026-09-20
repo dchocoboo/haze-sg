@@ -7,7 +7,7 @@ import Foundation
 /// has nothing to lead with. PSI rides along as context — it is the number
 /// people recognise, but as a 24-hour mean it lags and can still read badly
 /// on a clearing day.
-public struct Conditions: Sendable, Equatable {
+public struct Conditions: Sendable, Equatable, Codable {
     public let region: Region
     public let pm25: Double
     public let psi: Double?
