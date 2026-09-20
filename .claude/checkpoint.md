@@ -1,12 +1,19 @@
 # Checkpoint — Haze SG
 
-**Resume here:** Phase 1 nearly done. NEA parser, Open-Meteo parser and the
-Comparison guard are all done and green (24 tests). Next concrete action:
-TDD the `AirQualitySource` protocol and the two live HTTP clients, with
-concurrent fetch and per-source failure isolation. After that, Phase 2 needs
-an Xcode app project, which does not exist yet.
+**Resume here:** Phase 1 is COMPLETE. 38 tests green (35 offline, 3 live).
+The whole data layer works end to end against the real endpoints.
+
+Next concrete action: Phase 2. Create the Xcode app project — it does not
+exist yet, and this is the fiddly part. Create `HazeSG.xcodeproj` with an
+iOS app target (iOS 18 min, Swift 6), add `Packages/HazeSGKit` as a local
+package dependency, then build NowView against NEASource.
+
+Stopped here deliberately: weekly usage was at 81% with 3 days to reset,
+and scaffolding an Xcode project from the CLI is unpredictable in cost.
+Tree is clean, everything is pushed.
 
 Run tests with: `cd Packages/HazeSGKit && swift test`
+Run live integration tests with: `HAZE_LIVE=1 swift test`
 Repo: https://github.com/dchocoboo/haze-sg
 
 Plan: `/Users/david/.claude/plans/system-reminder-the-user-started-swift-valiant.md`
@@ -37,10 +44,10 @@ Plan: `/Users/david/.claude/plans/system-reminder-the-user-started-swift-valiant
 ## Tasks
 
 - [x] Phase 0 — repo scaffolding + GitHub repo
-- [~] Phase 1 — done: Reading model, NEA parser (PSI + PM2.5 + errors),
-      Open-Meteo parser, SourceDescriptor, Comparison guard. 24 tests green.
-      Still to do: AirQualitySource protocol + live HTTP clients.
-- [ ] Phase 2 — Now screen against NEA only
+- [x] Phase 1 — Reading model, NEA parser, Open-Meteo parser,
+      SourceDescriptor, Comparison guard, AirQualitySource + AirQualityService,
+      NEASource + OpenMeteoSource live clients. 38 tests green.
+- [ ] Phase 2 — Xcode project + Now screen against NEA only
 - [ ] Phase 3 — Open-Meteo provider, concurrent fetch, per-source failure handling
 - [ ] Phase 4 — Compare screen + divergence calc + explanatory copy
 - [ ] Phase 5 — WidgetKit extension
