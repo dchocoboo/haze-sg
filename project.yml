@@ -1,0 +1,40 @@
+name: HazeSG
+options:
+  bundleIdPrefix: com.dchocoboo
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+packages:
+  HazeSGKit:
+    path: Packages/HazeSGKit
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    CODE_SIGN_STYLE: Automatic
+
+targets:
+  HazeSG:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+    dependencies:
+      - package: HazeSGKit
+        product: HazeSGKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.dchocoboo.hazesg
+        PRODUCT_NAME: Haze SG
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Haze SG
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGNING_REQUIRED: NO
+        CODE_SIGNING_ALLOWED: NO

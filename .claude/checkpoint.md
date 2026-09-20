@@ -1,16 +1,26 @@
 # Checkpoint — Haze SG
 
-**Resume here:** Phase 1 is COMPLETE. 38 tests green (35 offline, 3 live).
-The whole data layer works end to end against the real endpoints.
+**Resume here:** Phases 0-2 COMPLETE. 53 tests green. The app builds, runs
+in the simulator and shows live NEA data.
 
-Next concrete action: Phase 2. Create the Xcode app project — it does not
-exist yet, and this is the fiddly part. Create `HazeSG.xcodeproj` with an
-iOS app target (iOS 18 min, Swift 6), add `Packages/HazeSGKit` as a local
-package dependency, then build NowView against NEASource.
+Next concrete action: Phase 3 is already half done (OpenMeteoSource exists
+and is wired into the app's AirQualityService), so go to Phase 4: the
+Compare screen. Build a CompareViewModel over `Snapshot.comparison(of:in:)`,
+showing each source's 1-hour PM2.5 side by side with the spread, each row
+labelled measured vs modelled, and `SourceDescriptor.caveat` as the
+explanation for why they differ.
 
-Stopped here deliberately: weekly usage was at 81% with 3 days to reset,
-and scaffolding an Xcode project from the CLI is unpredictable in cost.
-Tree is clean, everything is pushed.
+## Build and run
+
+    xcodegen generate                 # .xcodeproj is gitignored, regenerate it
+    cd Packages/HazeSGKit && swift test
+    HAZE_LIVE=1 swift test            # hits the real endpoints
+    xcodebuild -project HazeSG.xcodeproj -scheme HazeSG \
+      -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+      -derivedDataPath build build
+
+The built app lands at
+`build/Build/Products/Debug-iphonesimulator/Haze SG.app`.
 
 Run tests with: `cd Packages/HazeSGKit && swift test`
 Run live integration tests with: `HAZE_LIVE=1 swift test`
@@ -47,8 +57,10 @@ Plan: `/Users/david/.claude/plans/system-reminder-the-user-started-swift-valiant
 - [x] Phase 1 — Reading model, NEA parser, Open-Meteo parser,
       SourceDescriptor, Comparison guard, AirQualitySource + AirQualityService,
       NEASource + OpenMeteoSource live clients. 38 tests green.
-- [ ] Phase 2 — Xcode project + Now screen against NEA only
-- [ ] Phase 3 — Open-Meteo provider, concurrent fetch, per-source failure handling
+- [x] Phase 2 — Xcode project (xcodegen) + Now screen. Verified running in
+      the simulator against live NEA data.
+- [~] Phase 3 — Open-Meteo provider and concurrent fetch done in Phase 1 and
+      wired into the app. Nothing shows it in the UI yet; that is Phase 4.
 - [ ] Phase 4 — Compare screen + divergence calc + explanatory copy
 - [ ] Phase 5 — Widgets. Full design in `docs/widgets.md`: Home Screen
       (small/medium/large), Lock Screen (circular/rectangular/inline),
@@ -84,6 +96,19 @@ Plan: `/Users/david/.claude/plans/system-reminder-the-user-started-swift-valiant
 - `Unit` collides with Foundation's `Unit` class. The enum is `ReadingUnit`.
 - Open-Meteo timestamps are local-naive with `utc_offset_seconds` separate.
   Parsing as UTC silently puts SG readings 8h out. Test pins this.
+- PSI bands (NEA): 0-50 Good, 51-100 Moderate, 101-200 Unhealthy,
+  201-300 Very Unhealthy, 300+ Hazardous. 1h PM2.5 bands: 0-55 Normal,
+  56-150 Elevated, 151-250 High, 251+ Very High.
+- NEA advises using the 1-hour PM2.5, not the 24-hour PSI, for anything you
+  are about to do in the next hour. The Now screen reflects this: PSI is the
+  recognised headline, PM2.5 is badged "Use this one". When the two bands
+  disagree (PSI still carrying earlier bad air on a clearing day) the app
+  explains it rather than looking broken.
+- Reading times are always rendered in SGT with an explicit suffix. A reading
+  published for 14:00 in Singapore is a fact about Singapore; showing it in
+  the phone's own timezone would silently show the wrong hour when travelling.
+- The `.xcodeproj` is generated from `project.yml` and gitignored. Run
+  `xcodegen generate` after cloning.
 - Open-Meteo readings carry `region: nil` on purpose — one 40km cell cannot
   resolve NEA's five regions and pretending otherwise invents precision.
 - `Comparison.build` is the safety rail: it throws on mixed metric, unit,
