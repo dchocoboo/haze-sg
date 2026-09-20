@@ -22,6 +22,34 @@ explanation for why they differ.
 The built app lands at
 `build/Build/Products/Debug-iphonesimulator/Haze SG.app`.
 
+## Deploying to the physical iPhone
+
+Device is "Choco PRO", an iPhone 18 Pro, UDID 00008160-0014658108834036.
+Signing team KNLTNXVHSU, automatic provisioning.
+
+    xcodebuild -project HazeSG.xcodeproj -scheme HazeSG \
+      -destination 'platform=iOS,id=00008160-0014658108834036' \
+      -derivedDataPath build-device -allowProvisioningUpdates build
+    xcrun devicectl device install app --device 00008160-0014658108834036 \
+      "build-device/Build/Products/Debug-iphoneos/Haze SG.app"
+    xcrun devicectl device process launch --device 00008160-0014658108834036 \
+      com.dchocoboo.hazesg
+
+Gotchas hit while doing this:
+- The launch step fails with "Locked" unless the phone is actually unlocked.
+  Installing works while locked; launching does not.
+- A fresh install lands on the last home screen page or only in the App
+  Library, so it can look like it did not install. Verify with
+  `xcrun devicectl device info apps --device <UDID> | grep hazesg`.
+- If the icon is there but will not open, check Developer Mode under
+  Settings > Privacy & Security. Off by default on iOS 16+, needs a restart.
+- Signed with an Apple Development certificate. If KNLTNXVHSU is a free
+  personal team the app stops launching after 7 days and must be reinstalled;
+  a paid team gets a year.
+- There is no iPhone 18 Pro simulator available: that device type needs a
+  runtime newer than the installed iOS 26.5. Use iPhone 17 Pro for simulator
+  work, or download a newer runtime through Xcode.
+
 Run tests with: `cd Packages/HazeSGKit && swift test`
 Run live integration tests with: `HAZE_LIVE=1 swift test`
 Repo: https://github.com/dchocoboo/haze-sg
