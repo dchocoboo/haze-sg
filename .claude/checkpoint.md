@@ -1,8 +1,11 @@
 # Checkpoint — Haze SG
 
-**Resume here:** Phase 0 in progress. Next concrete action: finish repo
-scaffolding (.gitignore, LICENSE, README, docs/sources.md), commit, then
-`gh repo create dchocoboo/haze-sg --public --source=. --push`.
+**Resume here:** Phase 1 in progress. NEA parser done and green (9 tests).
+Next concrete action: TDD the Open-Meteo parser, then the comparison logic
+(`Divergence`) which is the most important code in the repo.
+
+Run tests with: `cd Packages/HazeSGKit && swift test`
+Repo: https://github.com/dchocoboo/haze-sg
 
 Plan: `/Users/david/.claude/plans/system-reminder-the-user-started-swift-valiant.md`
 
@@ -31,8 +34,10 @@ Plan: `/Users/david/.claude/plans/system-reminder-the-user-started-swift-valiant
 
 ## Tasks
 
-- [~] Phase 0 — repo scaffolding + GitHub repo
-- [ ] Phase 1 — Reading model, AirQualitySource protocol, NEA provider + fixture tests
+- [x] Phase 0 — repo scaffolding + GitHub repo
+- [~] Phase 1 — Reading model done; NEA parser done (PSI + PM2.5 + errors,
+      9 tests green). Still to do: Open-Meteo parser, AirQualitySource
+      protocol + live HTTP clients, Divergence comparison logic.
 - [ ] Phase 2 — Now screen against NEA only
 - [ ] Phase 3 — Open-Meteo provider, concurrent fetch, per-source failure handling
 - [ ] Phase 4 — Compare screen + divergence calc + explanatory copy
@@ -49,6 +54,12 @@ Plan: `/Users/david/.claude/plans/system-reminder-the-user-started-swift-valiant
   passthrough.
 
 ## Notes / decisions
+
+- Logic lives in a local Swift package `Packages/HazeSGKit` so it is testable
+  from the CLI with `swift test`, independent of Xcode and the simulator. The
+  app target will depend on it. The Xcode project does not exist yet.
+- Swift 6 strict concurrency rejects a `static let ISO8601DateFormatter`
+  (not Sendable). Build one per call instead; parsing is rare enough.
 
 - Use data.gov.sg **v2** family. Legacy `api.data.gov.sg/v1/environment/*`
   still 200s but is deprecated.
