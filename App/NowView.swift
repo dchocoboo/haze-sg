@@ -13,8 +13,8 @@ struct NowView: View {
                     if model.hasNoData {
                         noDataNotice
                     } else {
-                        psiCard
                         pm25Card
+                        psiCard
                         if model.psiAndPM25Disagree { disagreementNote }
                     }
 
@@ -44,17 +44,53 @@ struct NowView: View {
     // MARK: - PSI
 
     private var psiCard: some View {
+        HStack(alignment: .center, spacing: 14) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("24-hour PSI")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.secondary)
+                Text("A 24-hour average, so it lags behind the air outside.")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 8)
+
+            Text(model.psi.map { String(Int($0.rounded())) } ?? "–")
+                .font(.system(size: 34, weight: .semibold, design: .rounded))
+                .monospacedDigit()
+
+            if let band = model.psiBand {
+                Text(band.label)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(band.color)
+                    .frame(width: 66, alignment: .trailing)
+            }
+        }
+        .padding(16)
+        .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 20))
+    }
+
+    // MARK: - PM2.5
+
+    private var pm25Card: some View {
         VStack(spacing: 6) {
-            Text("24-hour PSI")
+            Text("1-hour PM2.5")
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.secondary)
 
-            Text(model.psi.map { String(Int($0.rounded())) } ?? "–")
-                .font(.system(size: 88, weight: .bold, design: .rounded))
-                .monospacedDigit()
-                .contentTransition(.numericText())
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(model.pm25.map { String(Int($0.rounded())) } ?? "–")
+                    .font(.system(size: 88, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+                    .contentTransition(.numericText())
+                Text("µg/m³")
+                    .font(.title3)
+                    .foregroundStyle(.secondary)
+            }
 
-            if let band = model.psiBand {
+            if let band = model.pm25Band {
                 Text(band.label)
                     .font(.headline)
                     .padding(.horizontal, 14)
@@ -62,48 +98,14 @@ struct NowView: View {
                     .background(band.color.opacity(0.18), in: Capsule())
                     .foregroundStyle(band.color)
             }
+
+            Text("What to go by for the next hour")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding(.top, 2)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 24)
-        .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 20))
-    }
-
-    // MARK: - PM2.5
-
-    private var pm25Card: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Text("1-hour PM2.5")
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.secondary)
-                Spacer()
-                Text("Use this one")
-                    .font(.caption2.weight(.semibold))
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
-                    .background(.tint.opacity(0.15), in: Capsule())
-            }
-
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text(model.pm25.map { String(Int($0.rounded())) } ?? "–")
-                    .font(.system(size: 44, weight: .semibold, design: .rounded))
-                    .monospacedDigit()
-                Text("µg/m³")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                Spacer()
-                if let band = model.pm25Band {
-                    Text(band.label)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(band.color)
-                }
-            }
-
-            Text("NEA advises using the 1-hour PM2.5 for anything you're about to do. PSI is a 24-hour average, so it lags.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-        .padding(18)
         .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 20))
     }
 

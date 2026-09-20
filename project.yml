@@ -27,6 +27,7 @@ targets:
     dependencies:
       - package: HazeSGKit
         product: HazeSGKit
+      - target: HazeSGWidget
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.dchocoboo.hazesg
@@ -36,4 +37,30 @@ targets:
         INFOPLIST_KEY_CFBundleDisplayName: Haze SG
         INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        TARGETED_DEVICE_FAMILY: "1"
+
+  HazeSGWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Widget
+    dependencies:
+      - package: HazeSGKit
+        product: HazeSGKit
+    info:
+      # A widget extension needs a real NSExtension dictionary. The
+      # INFOPLIST_KEY_NSExtensionPointIdentifier build setting does not
+      # produce one, and without it the app fails to install with
+      # "Invalid placeholder attributes".
+      path: Support/HazeSGWidget-Info.plist
+      properties:
+        CFBundleDisplayName: Haze SG
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.dchocoboo.hazesg.widget
+        PRODUCT_NAME: Haze SG Widget
+        GENERATE_INFOPLIST_FILE: NO
+        SKIP_INSTALL: YES
         TARGETED_DEVICE_FAMILY: "1"

@@ -90,7 +90,11 @@ Plan: `/Users/david/.claude/plans/system-reminder-the-user-started-swift-valiant
 - [~] Phase 3 — Open-Meteo provider and concurrent fetch done in Phase 1 and
       wired into the app. Nothing shows it in the UI yet; that is Phase 4.
 - [ ] Phase 4 — Compare screen + divergence calc + explanatory copy
-- [ ] Phase 5 — Widgets. Full design in `docs/widgets.md`: Home Screen
+- [x] Phase 5 — Widgets BUILT. `Widget/` target, families: systemSmall,
+      systemMedium, accessoryCircular, accessoryRectangular, accessoryInline.
+      Region picked per instance via `SelectRegionIntent`. 1-hour PM2.5 is the
+      main element everywhere, PSI is secondary.
+- [ ] Phase 5 notes — original design was Full design in `docs/widgets.md`: Home Screen
       (small/medium/large), Lock Screen (circular/rectangular/inline),
       StandBy, and an iOS 18 ControlWidget for Control Center / Lock Screen
       button / Action Button. Two hard constraints: colour is stripped on
@@ -109,6 +113,23 @@ Plan: `/Users/david/.claude/plans/system-reminder-the-user-started-swift-valiant
   passthrough.
 
 ## Notes / decisions
+
+- The Now screen and the widgets both LEAD WITH 1-HOUR PM2.5, with 24-hour PSI
+  as a secondary element. NEA's guidance is to use the 1-hour PM2.5 for
+  anything in the next hour; PSI lags. This was a user decision, do not
+  quietly reverse it.
+- No App Group. The widget fetches directly in its timeline provider rather
+  than sharing a cache with the app. App Groups are a paid-account capability
+  and the signing team may be a free personal one, so requiring one risked
+  breaking provisioning for no v1 benefit. Revisit if a paid account is
+  confirmed.
+- A widget extension needs a real `NSExtension` dictionary in its Info.plist.
+  `INFOPLIST_KEY_NSExtensionPointIdentifier` does NOT generate one, and
+  without it the whole app fails to install with the useless error
+  "Invalid placeholder attributes". Hence `Support/HazeSGWidget-Info.plist`
+  with `GENERATE_INFOPLIST_FILE: NO` for that target.
+- Only the keyless sources run in the widget (NEA). PurpleAir and Google bill
+  the user's own key.
 
 - NEA publishes the reading for hour N at about hour N, not on a fixed lag.
   Sampled 2026-09-20: 12:00 data seen at 12:45:40, 13:00 at 13:45:38, but
