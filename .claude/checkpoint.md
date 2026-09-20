@@ -50,7 +50,13 @@ Plan: `/Users/david/.claude/plans/system-reminder-the-user-started-swift-valiant
 - [ ] Phase 2 — Xcode project + Now screen against NEA only
 - [ ] Phase 3 — Open-Meteo provider, concurrent fetch, per-source failure handling
 - [ ] Phase 4 — Compare screen + divergence calc + explanatory copy
-- [ ] Phase 5 — WidgetKit extension
+- [ ] Phase 5 — Widgets. Full design in `docs/widgets.md`: Home Screen
+      (small/medium/large), Lock Screen (circular/rectangular/inline),
+      StandBy, and an iOS 18 ControlWidget for Control Center / Lock Screen
+      button / Action Button. Two hard constraints: colour is stripped on
+      several surfaces so severity must be encoded redundantly; and with no
+      backend the widget fetches for itself on an hourly timeline sharing an
+      App Group cache with the app.
 - [ ] Phase 6 — Settings, Keychain, PurpleAir + Google providers (after spikes)
 - [ ] Phase 7 — Release readiness: SG Open Data Licence attribution, privacy manifest
 
@@ -63,6 +69,12 @@ Plan: `/Users/david/.claude/plans/system-reminder-the-user-started-swift-valiant
   passthrough.
 
 ## Notes / decisions
+
+- NEA publishes the reading for hour N at about hour N, not on a fixed lag.
+  Sampled 2026-09-20: 12:00 data seen at 12:45:40, 13:00 at 13:45:38, but
+  14:00 at 14:00:37. `updatedTimestamp` moves as the record is republished
+  within the hour, so the first two only recorded when the fetch happened.
+  Do not build a 45-minute offset into the widget timeline.
 
 - Logic lives in a local Swift package `Packages/HazeSGKit` so it is testable
   from the CLI with `swift test`, independent of Xcode and the simulator. The
