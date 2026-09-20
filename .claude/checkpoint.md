@@ -1,8 +1,10 @@
 # Checkpoint — Haze SG
 
-**Resume here:** Phase 1 in progress. NEA parser done and green (9 tests).
-Next concrete action: TDD the Open-Meteo parser, then the comparison logic
-(`Divergence`) which is the most important code in the repo.
+**Resume here:** Phase 1 nearly done. NEA parser, Open-Meteo parser and the
+Comparison guard are all done and green (24 tests). Next concrete action:
+TDD the `AirQualitySource` protocol and the two live HTTP clients, with
+concurrent fetch and per-source failure isolation. After that, Phase 2 needs
+an Xcode app project, which does not exist yet.
 
 Run tests with: `cd Packages/HazeSGKit && swift test`
 Repo: https://github.com/dchocoboo/haze-sg
@@ -35,9 +37,9 @@ Plan: `/Users/david/.claude/plans/system-reminder-the-user-started-swift-valiant
 ## Tasks
 
 - [x] Phase 0 — repo scaffolding + GitHub repo
-- [~] Phase 1 — Reading model done; NEA parser done (PSI + PM2.5 + errors,
-      9 tests green). Still to do: Open-Meteo parser, AirQualitySource
-      protocol + live HTTP clients, Divergence comparison logic.
+- [~] Phase 1 — done: Reading model, NEA parser (PSI + PM2.5 + errors),
+      Open-Meteo parser, SourceDescriptor, Comparison guard. 24 tests green.
+      Still to do: AirQualitySource protocol + live HTTP clients.
 - [ ] Phase 2 — Now screen against NEA only
 - [ ] Phase 3 — Open-Meteo provider, concurrent fetch, per-source failure handling
 - [ ] Phase 4 — Compare screen + divergence calc + explanatory copy
@@ -60,6 +62,14 @@ Plan: `/Users/david/.claude/plans/system-reminder-the-user-started-swift-valiant
   app target will depend on it. The Xcode project does not exist yet.
 - Swift 6 strict concurrency rejects a `static let ISO8601DateFormatter`
   (not Sendable). Build one per call instead; parsing is rare enough.
+- `Unit` collides with Foundation's `Unit` class. The enum is `ReadingUnit`.
+- Open-Meteo timestamps are local-naive with `utc_offset_seconds` separate.
+  Parsing as UTC silently puts SG readings 8h out. Test pins this.
+- Open-Meteo readings carry `region: nil` on purpose — one 40km cell cannot
+  resolve NEA's five regions and pretending otherwise invents precision.
+- `Comparison.build` is the safety rail: it throws on mixed metric, unit,
+  window, or observations more than an hour apart. Verified by mutation —
+  removing the window guard makes the test fail, as it should.
 
 - Use data.gov.sg **v2** family. Legacy `api.data.gov.sg/v1/environment/*`
   still 200s but is deprecated.

@@ -33,7 +33,7 @@ public enum Metric: String, Sendable, Codable, Hashable {
     case psi, pm2_5, pm10, so2, co, o3, no2, usAQI
 }
 
-public enum Unit: String, Sendable, Codable, Hashable {
+public enum ReadingUnit: String, Sendable, Codable, Hashable {
     /// Micrograms per cubic metre.
     case microgramsPerCubicMetre
     /// A dimensionless index such as PSI or US AQI. Index values from
@@ -51,7 +51,7 @@ public struct Reading: Sendable, Codable, Hashable, Identifiable {
     public let source: SourceID
     public let region: Region?
     public let metric: Metric
-    public let unit: Unit
+    public let unit: ReadingUnit
     /// Averaging window in minutes. `0` means instantaneous.
     public let windowMinutes: Int
     public let observedAt: Date
@@ -65,7 +65,7 @@ public struct Reading: Sendable, Codable, Hashable, Identifiable {
         source: SourceID,
         region: Region?,
         metric: Metric,
-        unit: Unit,
+        unit: ReadingUnit,
         windowMinutes: Int,
         observedAt: Date,
         value: Double
